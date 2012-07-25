@@ -1,3 +1,3 @@
-redo-ifchange Control/CSV.hs
+redo-ifchange Data/CSV/Parser.hs
 redo-ifchange configure
 cabal build
