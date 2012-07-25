@@ -7,7 +7,7 @@
 
 module Data.CSV.Parser (
     columns
-  , rowVal
+  , row
   , convert
   , convertOne
   , ColumnDef
@@ -54,8 +54,8 @@ badCSV b = FromCSV $ \_ -> Left b
 goodCSV :: a -> FromCSV b a
 goodCSV a = FromCSV $ \_ -> Right a
 
-rowVal :: String -> FromCSV String String
-rowVal s = do
+row :: String -> FromCSV String String
+row s = do
   (def, rec) <- (envDef &&& envRecord) <$> ask
   case M.lookup s def of
     Nothing -> badCSV $ "Missing key: " ++ s
