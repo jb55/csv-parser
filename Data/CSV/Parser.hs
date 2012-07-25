@@ -20,6 +20,7 @@ import           Text.CSV
 import           Control.Monad.Reader
 import           Control.Applicative
 import           Control.Arrow
+import           Control.Monad.Error
 
 type ColumnDef = M.HashMap String Int
 type CSVEnv = (ColumnDef, Record)
@@ -31,7 +32,7 @@ envDef :: CSVEnv -> ColumnDef
 envDef = fst
 
 newtype FromCSV b a = FromCSV { fromCSV :: CSVEnv -> Either b a }
-  
+
 instance MonadReader CSVEnv (FromCSV b) where
   ask       = FromCSV return
   local f m = ask >>= return . f >> m
@@ -44,6 +45,13 @@ instance Monad (FromCSV b) where
   m >>= f = FromCSV $ \env -> case fromCSV m env of
                                 Left b  -> Left b
                                 Right a -> fromCSV (f a) env
+
+instance MonadError a (FromCSV a) where
+  throwError = badCSV
+  m `catchError` handler =
+    FromCSV $ \env -> case fromCSV m env of
+                        Right x -> Right x
+                        Left b  -> fromCSV (handler b) env
 
 columns :: Record -> ColumnDef
 columns cols = M.fromList $ cols `zip` [0..]
