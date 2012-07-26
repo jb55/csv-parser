@@ -18,9 +18,10 @@ data Track = Track { trackCatId :: String
 
 trackParser :: Parser Track
 trackParser = do
-  catId <- row "CatalogId"
-  track <- read <$> row "Track"
-  title <- row "Title"
+  first <- columnInd 0
+  catId <- column "CatalogId"
+  track <- read <$> column "Track"
+  title <- column "Title"
   return $ Track catId track title
 
 main = do

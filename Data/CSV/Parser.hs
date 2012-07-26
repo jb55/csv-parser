@@ -7,7 +7,7 @@
 
 module Data.CSV.Parser (
     columns
-  , row
+  , column
   , convert
   , convertOne
   , ColumnDef
@@ -19,8 +19,15 @@ import qualified Data.HashMap.Lazy as M
 import           Text.CSV
 import           Control.Monad.Reader
 import           Control.Applicative
-import           Control.Arrow
 import           Control.Monad.Error
+import           Safe (atMay)
+
+infix 0 <?>
+(<?>) :: (Monad m, MonadError e m) => Maybe a -> e -> m a
+m <?> e = maybe (throwError e) return m
+
+(!!?) :: [a] -> Int -> Maybe a
+(!!?) = atMay
 
 type ColumnDef = M.HashMap String Int
 type CSVEnv = (ColumnDef, Record)
@@ -62,12 +69,18 @@ badCSV b = FromCSV $ \_ -> Left b
 goodCSV :: a -> FromCSV b a
 goodCSV a = FromCSV $ \_ -> Right a
 
-row :: String -> FromCSV String String
-row s = do
-  (def, rec) <- (envDef &&& envRecord) <$> ask
+columnInd :: Int -> FromCSV String String
+columnInd i = do
+  rec <- envRecord <$> ask
+  rec !!? i <?> "Index " ++ show i ++ " out of range in " ++ show rec
+
+
+column :: String -> FromCSV String String
+column s = do
+  def <- envDef <$> ask
   case M.lookup s def of
     Nothing -> badCSV $ "Missing key: " ++ s
-    Just ind -> goodCSV $ rec !! ind
+    Just ind -> columnInd ind
 
 
 convertOne :: FromCSV b a -> ColumnDef -> Record -> Either b a
