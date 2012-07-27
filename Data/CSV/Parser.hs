@@ -47,8 +47,17 @@ instance MonadReader CSVEnv (FromCSV b) where
 instance Functor (FromCSV b) where
   fmap f m = FromCSV $ \env -> fmap f $ fromCSV m env
 
+instance Applicative (FromCSV a) where
+  pure     = goodCSV
+  fa <*> a = FromCSV $ \env ->
+    case fromCSV fa env of
+      Left b  -> Left b
+      Right fn -> case fromCSV a env of
+                   Left b   -> Left b
+                   Right a' -> Right $ fn a'
+
 instance Monad (FromCSV b) where
-  return  = goodCSV
+  return  = pure
   m >>= f = FromCSV $ \env -> case fromCSV m env of
                                 Left b  -> Left b
                                 Right a -> fromCSV (f a) env
