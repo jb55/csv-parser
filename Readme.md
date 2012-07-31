@@ -24,6 +24,12 @@ trackParser = do
   title <- column "Title"
   return $ Track catId track title
 
+-- Or, alternatively, in Applicative style:
+trackParser' :: Parser Track
+trackParser' = Track <$> column "CatalogId"
+                     <*> fmap read (column "Track")
+                     <*> column "Title"
+
 main = do
   Right csv <- parseCSVFromFile "stuff.csv"
   mapM_ print (convert trackParser csv)
