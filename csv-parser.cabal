@@ -21,6 +21,6 @@ library
                , unordered-containers
                , MissingH
                , csv
-               , mtl == 2.0.1.0
-               , transformers
+               , mtl == 2.1.2
+               , transformers == 0.3.0.0
                , safe
