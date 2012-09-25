@@ -21,6 +21,7 @@ import           Control.Monad.Reader
 import           Control.Applicative
 import           Control.Monad.Error
 import           Safe (atMay)
+import           Data.Default
 
 infix 0 <?>
 (<?>) :: (Monad m, MonadError e m) => Maybe a -> e -> m a
@@ -56,6 +57,14 @@ instance Applicative (FromCSV a) where
                    Left b   -> Left b
                    Right a' -> Right $ fn a'
 
+instance Default a => Alternative (FromCSV a) where
+  empty     = badCSV def
+  a1 <|> a2 = FromCSV $ \env ->
+    case fromCSV a1 env of
+      Left _  -> fromCSV a2 env
+      Right _ -> fromCSV a1 env
+
+
 instance Monad (FromCSV b) where
   return  = pure
   m >>= f = FromCSV $ \env -> case fromCSV m env of
@@ -86,8 +95,8 @@ columnInd i = do
 
 column :: String -> FromCSV String String
 column s = do
-  def <- envDef <$> ask
-  case M.lookup s def of
+  defin <- envDef <$> ask
+  case M.lookup s defin of
     Nothing -> badCSV $ "Missing key: " ++ s
     Just ind -> columnInd ind
 

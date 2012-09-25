@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                csv-parser
-version:             0.2.2.0
+version:             0.2.2.1
 -- synopsis:
 -- description:
 license:             BSD3
@@ -21,6 +21,7 @@ library
                , unordered-containers
                , MissingH
                , csv
-               , mtl == 2.0.1.0
+               , mtl >= 2.0.1.0
                , transformers
                , safe
+               , data-default
