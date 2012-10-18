@@ -8,6 +8,7 @@
 module Data.CSV.Parser (
     columns
   , column
+  , columnInd
   , convert
   , convertOne
   , ColumnDef
